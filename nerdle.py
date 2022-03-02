@@ -1,11 +1,9 @@
+from dataclasses import dataclass
 from typing import List, Tuple
 from tqdm import tqdm
 
 DIGITS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
 OPERATIONS = ["+", "-", "/", "*"]
-
-CHARS = 8
-MAX_DIGITS_FOR_ANSWER = 5
 
 
 def operate_on_numbers(num1, op, num2) -> float:
@@ -80,10 +78,10 @@ def is_valid_solution(solution: List[str]) -> bool:
 
 
 def format_solution(solution: List[str]) -> str:
-    s = ""
+    s = solution[0]
 
-    prev = ""
-    for c in solution:
+    prev = solution[0]
+    for c in solution[1:]:
         if prev in DIGITS and c in DIGITS:
             s += c
         else:
@@ -94,7 +92,7 @@ def format_solution(solution: List[str]) -> str:
     return s
 
 
-def get_options(solution: List[str]) -> List[str]:
+def get_options(num_chars, solution: List[str]) -> List[str]:
 
     has_eq = "=" in solution
     index = len(solution)
@@ -104,13 +102,16 @@ def get_options(solution: List[str]) -> List[str]:
 
     prev_c = solution[-1]
 
-    is_forced_equals = not has_eq and index == CHARS - 2
+    is_forced_equals = not has_eq and index == num_chars - 2
 
     # is next character forced to be equals?
-    next_is_forced_equals = not has_eq and index + 1 == CHARS - 2
+    next_is_forced_equals = not has_eq and index + 1 == num_chars - 2
 
     is_forced_digit = (
-        (index == CHARS - 1) or prev_c in OPERATIONS or has_eq or next_is_forced_equals
+        (index == num_chars - 1)
+        or prev_c in OPERATIONS
+        or has_eq
+        or next_is_forced_equals
     )
 
     can_be_equals = not has_eq and not prev_c in OPERATIONS
@@ -127,41 +128,29 @@ def get_options(solution: List[str]) -> List[str]:
     return DIGITS + OPERATIONS
 
 
+def generate_solutions(
+    num_chars, solution: List[str] = [], solutions: List[List[str]] = []
+):
+    """Generates a list of all syntactically correct solutions given
+    starting characters"""
+
+    # solution is full length, it is the only option
+    if len(solution) >= num_chars:
+        solutions.append(solution)
+
+    # otherwise return list of possible solutions
+    else:
+        for option in get_options(num_chars, solution):
+            generate_solutions(num_chars, solution + [option], solutions)
+
+    return solutions
+
+
 def find_all_solutions():
-    all_solutions = []
-    valid_solutions = []
-
-    solution = []
-
-    for c0 in tqdm(get_options(solution), desc="c0", position=0, leave=False):
-        solution.append(c0)
-        for c1 in tqdm(get_options(solution), desc="c1", position=1, leave=False):
-            solution.append(c1)
-            for c2 in tqdm(get_options(solution), desc="c2", position=2, leave=False):
-                solution.append(c2)
-                for c3 in get_options(solution):
-                    solution.append(c3)
-                    for c4 in get_options(solution):
-                        solution.append(c4)
-                        for c5 in get_options(solution):
-                            solution.append(c5)
-                            for c6 in get_options(solution):
-                                solution.append(c6)
-                                for c7 in get_options(solution):
-                                    solution.append(c7)
-
-                                    all_solutions.append(solution)
-                                    if is_valid_solution(solution):
-                                        valid_solutions.append(solution)
-
-                                    solution = solution[:7]
-                                solution = solution[:6]
-                            solution = solution[:5]
-                        solution = solution[:4]
-                    solution = solution[:3]
-                solution = solution[:2]
-            solution = solution[:1]
-        solution = []
+    all_solutions = generate_solutions(num_chars=6)
+    valid_solutions = [
+        solution for solution in all_solutions if is_valid_solution(solution)
+    ]
 
     print("done")
     print(f"{len(valid_solutions)} valid solutions found")
