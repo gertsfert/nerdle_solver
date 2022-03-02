@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from pathlib import Path
 from typing import List, Tuple
-from tqdm import tqdm
+
 
 DIGITS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
 OPERATIONS = ["+", "-", "/", "*"]
@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
     solution_strs = [format_solution(s) for s in solutions]
 
-    outpath = "nerdle_solutions.txt"
+    outpath = Path("generated_solutions", "nerdle_solutions.txt")
     with open(outpath, "w") as file:
         file.write("\n".join(solution_strs))
 
