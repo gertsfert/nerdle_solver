@@ -1,4 +1,5 @@
 from pathlib import Path
+from re import I
 from typing import List, Tuple
 
 
@@ -128,29 +129,36 @@ def get_options(num_chars, solution: List[str]) -> List[str]:
     return DIGITS + OPERATIONS
 
 
-def generate_solutions(
-    num_chars, solution: List[str] = [], solutions: List[List[str]] = []
-):
-    """Generates a list of all syntactically correct solutions given
-    starting characters"""
+class Solutions:
+    def __init__(self, num_chars):
+        self.num_chars = num_chars
+        self.solutions = []
 
-    # solution is full length, it is the only option
-    if len(solution) >= num_chars:
-        solutions.append(solution)
+    def generate_all_solutions(self, solution: List[str] = []):
+        """Generates a list of all syntactically correct solutions given
+        starting characters"""
 
-    # otherwise return list of possible solutions
-    else:
-        for option in get_options(num_chars, solution):
-            generate_solutions(num_chars, solution + [option], solutions)
+        # solution is full length, append!
+        if len(solution) >= self.num_chars:
+            self.solutions.append(solution)
 
-    return solutions
+        # otherwise return list of possible solutions
+        else:
+            for option in get_options(self.num_chars, solution):
+                self.generate_all_solutions(solution + [option])
+
+    @property
+    def valid_solutions(self):
+        return [solution for solution in self.solutions if is_valid_solution(solution)]
 
 
 def find_all_solutions():
-    all_solutions = generate_solutions(num_chars=6)
-    valid_solutions = [
-        solution for solution in all_solutions if is_valid_solution(solution)
-    ]
+
+    solutions = Solutions(num_chars=6)
+
+    solutions.generate_all_solutions()
+
+    valid_solutions = solutions.valid_solutions
 
     print("done")
     print(f"{len(valid_solutions)} valid solutions found")
